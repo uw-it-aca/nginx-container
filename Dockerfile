@@ -49,9 +49,7 @@ USER acait
 
 RUN . /app/bin/activate &&\
     pip install nodeenv && nodeenv -p &&\
-    npm install npm@latest &&\
-    npm install vite &&\
-    npm run build
+    npm install npm@latest
 
 ENV PORT 8000
 ENV ENV localdev
