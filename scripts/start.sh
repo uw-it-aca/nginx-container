@@ -1,6 +1,4 @@
 #!/bin/bash
-# Remove any existing httpd data
-rm -rf /run/httpd/* /tmp/httpd*
 
 # Set the port for nginx
 sed 's/${PORT}/'$PORT'/g' /etc/nginx/nginx.conf > /tmp/nginx.tmp
