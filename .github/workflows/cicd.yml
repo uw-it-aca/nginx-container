@@ -1,0 +1,93 @@
+---
+name: Build, Test and Deploy
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+    branches: [main, develop]
+    types: [opened, reopened, synchronize]
+  release:
+    branches: [main]
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Set up tags
+        id: tags
+        shell: bash
+        run: |
+          GITHUB_REF=${{ github.ref }}
+
+          case $GITHUB_REF in
+            refs/tags/*)
+              FIXED_BRANCH=${GITHUB_REF#refs/tags/}
+              ;;
+            refs/heads/*)
+              FIXED_BRANCH=$(echo ${GITHUB_REF#refs/heads/} | tr / -)
+              ;;
+            refs/pull/*)
+              FIXED_BRANCH=$(echo ${GITHUB_REF#refs/pull/} | tr / -)
+              ;;
+            *)
+              FIXED_BRANCH=$(echo ${GITHUB_REF} | tr / -)
+              ;;
+          esac
+
+          echo "::set-output name=nc_tag::nginx-container:${FIXED_BRANCH}"
+          echo "::set-output name=ntc_tag::nginx-test-container:${FIXED_BRANCH}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: >-
+               ${{ runner.os }}-buildx-$(echo ${{ hashFiles('Dockerfile') }}
+               | head -c 16)
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Container Image
+        uses: docker/build-push-action@v2
+        with:
+          target: nginx-container
+          tags: ${{ steps.tags.outputs.nc_tag }}
+          push: false
+          load: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build Container Test Image
+        uses: docker/build-push-action@v2
+        with:
+          tags: ${{ steps.tags.outputs.ntc_tag }}
+          push: false
+          load: true
+
+      - name: Push Container to GCR
+        if: github.event_name == 'push' || github.event_name == 'release'
+        uses: uw-it-aca/actions/gcr-push@main
+        with:
+          image_tag: ${{ steps.tags.outputs.nc_tag }}
+          gcp_json_key: ${{ secrets.GCP_JSON_KEY }}
+
+      - name: Push Test Container to GCR
+        if: github.event_name == 'push' || github.event_name == 'release'
+        uses: uw-it-aca/actions/gcr-push@main
+        with:
+          image_tag: ${{ steps.tags.outputs.ntc_tag }}
+          gcp_json_key: ${{ secrets.GCP_JSON_KEY }}
