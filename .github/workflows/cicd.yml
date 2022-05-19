@@ -78,14 +78,14 @@ jobs:
           push: false
           load: true
 
-      - name: Push Container to GCR
+      - name: Push Image to Repository
         if: github.event_name == 'push' || github.event_name == 'release'
         uses: uw-it-aca/actions/gcr-push@main
         with:
           image_tag: ${{ steps.tags.outputs.nc_tag }}
           gcp_json_key: ${{ secrets.GCP_JSON_KEY }}
 
-      - name: Push Test Container to GCR
+      - name: Push Test Image to Repository
         if: github.event_name == 'push' || github.event_name == 'release'
         uses: uw-it-aca/actions/gcr-push@main
         with:
