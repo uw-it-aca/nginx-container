@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as nginx-container
+FROM ubuntu:22.04 as nginx-container
 
 WORKDIR /app/
 ENV PYTHONUNBUFFERED 1

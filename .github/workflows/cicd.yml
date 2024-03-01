@@ -13,16 +13,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: '3.10'
 
       - name: Set up tags
         id: tags
@@ -49,10 +49,10 @@ jobs:
           echo "::set-output name=ntc_tag::nginx-test-container:${FIXED_BRANCH}"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key: >-
@@ -62,7 +62,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Container Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           target: nginx-container
           tags: ${{ steps.tags.outputs.nc_tag }}
@@ -72,7 +72,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Build Container Test Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           tags: ${{ steps.tags.outputs.ntc_tag }}
           push: false
