@@ -47,7 +47,7 @@ RUN mkdir /var/run/supervisor && chown -R acait:acait /var/run/supervisor && \
 USER acait
 
 RUN . /app/bin/activate && \
-  pip install nodeenv && nodeenv -p && \
+  pip install --no-cache-dir nodeenv && nodeenv -p && \
   npm install npm@latest
 
 ENV PORT 8000
