@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as nginx-container
+FROM ubuntu:24.04 as nginx-container
 
 WORKDIR /app/
 ENV PYTHONUNBUFFERED 1
@@ -31,10 +31,10 @@ ADD conf/nginx.conf /etc/nginx/nginx.conf
 ADD conf/locations.conf /etc/nginx/includes/locations.conf
 ADD scripts /scripts
 
-RUN groupadd -r acait -g 1000 && \
-  useradd -u 1000 -rm -g acait -d /home/acait -s /bin/bash -c "container user" acait && \
-  chown -R acait:acait /app && \
-  chown -R acait:acait /home/acait && \
+# Override default ubuntu user with acait
+RUN usermod -l acait -d /home/acait -m ubuntu && \
+  groupmod -n acait ubuntu && \
+  chown -R acait:acait /app /home/acait && \
   chmod -R +x /scripts
 
 RUN mkdir /var/run/supervisor && chown -R acait:acait /var/run/supervisor && \
