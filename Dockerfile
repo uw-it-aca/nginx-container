@@ -23,7 +23,7 @@ RUN apt-get update -y && \
 
 RUN python3 -m venv /app/
 
-RUN wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.10.0/nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
+RUN wget -nv https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.10.0/nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
   tar -xf nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
   mv nginx-prometheus-exporter /usr/local/bin
 
