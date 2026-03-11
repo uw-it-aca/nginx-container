@@ -18,7 +18,8 @@ RUN apt-get update -y && \
   python3-venv \
   python3-pip \
   supervisor \
-  wget
+  wget && \
+  rm -rf /var/lib/apt/lists
 
 RUN python3 -m venv /app/
 
@@ -26,10 +27,10 @@ RUN wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download
   tar -xf nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
   mv nginx-prometheus-exporter /usr/local/bin
 
-ADD conf/supervisord.conf /etc/supervisor/supervisord.conf
-ADD conf/nginx.conf /etc/nginx/nginx.conf
-ADD conf/locations.conf /etc/nginx/includes/locations.conf
-ADD scripts /scripts
+COPY conf/supervisord.conf /etc/supervisor/supervisord.conf
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY conf/locations.conf /etc/nginx/includes/locations.conf
+COPY scripts /scripts
 
 # Override default ubuntu user with acait
 RUN usermod -l acait -d /home/acait -m ubuntu && \
