@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as nginx-container
+FROM ubuntu:24.04 as nginx-container
 
 WORKDIR /app/
 ENV PYTHONUNBUFFERED 1
@@ -15,26 +15,30 @@ RUN apt-get update -y && \
   nginx \
   nodejs \
   npm \
+  python3 \
+  make \
+  g++ \
   python3-venv \
   python3-pip \
   supervisor \
-  wget
+  wget && \
+  rm -rf /var/lib/apt/lists
 
 RUN python3 -m venv /app/
 
-RUN wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.10.0/nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
+RUN wget -nv https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.10.0/nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
   tar -xf nginx-prometheus-exporter_0.10.0_linux_386.tar.gz && \
   mv nginx-prometheus-exporter /usr/local/bin
 
-ADD conf/supervisord.conf /etc/supervisor/supervisord.conf
-ADD conf/nginx.conf /etc/nginx/nginx.conf
-ADD conf/locations.conf /etc/nginx/includes/locations.conf
-ADD scripts /scripts
+COPY conf/supervisord.conf /etc/supervisor/supervisord.conf
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY conf/locations.conf /etc/nginx/includes/locations.conf
+COPY scripts /scripts
 
-RUN groupadd -r acait -g 1000 && \
-  useradd -u 1000 -rm -g acait -d /home/acait -s /bin/bash -c "container user" acait && \
-  chown -R acait:acait /app && \
-  chown -R acait:acait /home/acait && \
+# Override default ubuntu user with acait
+RUN usermod -l acait -d /home/acait -m ubuntu && \
+  groupmod -n acait ubuntu && \
+  chown -R acait:acait /app /home/acait && \
   chmod -R +x /scripts
 
 RUN mkdir /var/run/supervisor && chown -R acait:acait /var/run/supervisor && \
@@ -46,7 +50,7 @@ RUN mkdir /var/run/supervisor && chown -R acait:acait /var/run/supervisor && \
 USER acait
 
 RUN . /app/bin/activate && \
-  pip install nodeenv && nodeenv -p && \
+  pip install --no-cache-dir nodeenv && nodeenv -p && \
   npm install npm@latest
 
 ENV PORT 8000
