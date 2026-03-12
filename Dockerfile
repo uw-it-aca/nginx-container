@@ -15,6 +15,9 @@ RUN apt-get update -y && \
   nginx \
   nodejs \
   npm \
+  python3 \
+  make \
+  g++ \
   python3-venv \
   python3-pip \
   supervisor \
